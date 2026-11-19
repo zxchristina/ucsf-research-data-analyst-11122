@@ -1,0 +1,9 @@
+site_id,case_id,source,rule,description
+SITE01,CASE0005,redcap,MISSING_DATETIME,Anesthesia start or stop is missing/unparseable
+SITE02,CASE0031,anesthesia,EBL_PLAUSIBILITY,Missing/non-numeric/outside illustrative 0–15000 range
+SITE03,CASE0051,registry,AGE_PLAUSIBILITY,"Missing, non-numeric, or outside illustrative 18–100 age range"
+SITE04,CASE0070,redcap,SITE_ID_MISMATCH,Source site=SITE99; registry site=SITE04
+SITE05,CASE0084,redcap,DUPLICATE_CASE,Case key appears 2 times in redcap
+SITE05,CASE0100,redcap,OUT_OF_CODEBOOK,Unrecognized ASA class 'X'
+SITE07,CASE0121,anesthesia,SOURCE_RECORD_MISSING,Registry case is absent from this source extract
+SITE07,CASE0131,redcap,TIME_ORDER,Anesthesia stop must occur after start

@@ -58,10 +58,3 @@ Real clinical deployment would require approved institutional systems, IRB/DUA p
 - Integrate secure REDCap API exports and registry mappings **only after** appropriate authorization.
 - Add CI checks for R syntax and database migrations using an actual PostgreSQL service.
 
-## Development provenance / honest representation
-
-This initial repository was generated with AI assistance on **2026-11-18**. The included Git commits reflect the actual construction steps of this prototype, attributed to the assistant rather than impersonating an applicant. If using it in an application, review and run the code, understand the tradeoffs, fix issues you identify, and contribute your own commits before describing it as work you've personally implemented. Do not claim clinical deployment, validated medical rules, PHI handling, actual REDCap system access, or affiliation with UCSF.
-
-### Repository workflows
-
-See [`docs/development_workflow.md`](docs/development_workflow.md) for environment setup, a branch/merge example, AI code review checklist, and instructions to publish this Git history to your own GitHub account.

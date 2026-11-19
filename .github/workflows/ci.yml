@@ -1,0 +1,20 @@
+name: Python unit and data-release checks
+on:
+  push:
+  pull_request:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Run unit tests
+        run: python -m pytest -q
+      - name: Regenerate synthetic data and audited outputs
+        run: python -m src.ops_reliability.run --generate
+      - name: Confirm output reconciliation report exists
+        run: test -f outputs/validation_notes.md

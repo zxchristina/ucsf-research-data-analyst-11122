@@ -1,67 +1,62 @@
-# Synthetic Multicenter Transplant Outcomes Data QA
+# ServiceOps Reliability Lab
 
-**Prepared as an independent portfolio demonstration for the UCSF Research Data Analyst application (Req 11122) | Entirely synthetic data | Not an official UCSF/SATA project**
+**An independent operations analytics portfolio project — not a mock clinical database, a USC/UCSF assignment, or employer-proprietary work.**
 
-A reproducible, small-scale demonstration of how a research data coordination center could ingest REDCap-style exports, registry records, and anesthesia extracts from **16 fictional participating sites**, run transparent data-quality rules, and publish an audited, analysis-ready cohort. Built as an **AI-assisted portfolio starter** for personal learning. It is not affiliated with UCSF, the SATA Liver Transplant Outcomes Database, SRTR, or any clinical provider.
+A reproducible analytics system for a practical business question: **Can a distributed customer support team trust its daily demand, SLA and staffing metrics enough to make scheduling decisions?**
 
-**No actual patient information is included**. Field names, code lists, and plausibility thresholds are illustrative and **must not be used for clinical decisions or real protected health information (PHI)**.
+The project combines three fictional exports — service interactions, agent directory, and workforce schedules — across **six global regions and six months**. It detects data defects, documents reconciled counts, builds daily operational metrics, and evaluates two simple demand-forecasting baselines on a held-out time window.
 
-## Relevance to research data analyst work
+The choice of domain reflects applied service operations analytics work and is deliberately independent of any medical or transplant job description.
 
-| Research data-center responsibility | Demonstration |
-| --- | --- |
-| Ingest heterogeneous submissions | Three CSV exports with site IDs and common case keys |
-| Reconcile REDCap-style, registry, anesthesia data | `merge(..., validate='one_to_one')`, site/ID mismatch audit, row-count checks |
-| Assess missingness and implausible values | Missing/duplicate keys, types, date ordering, illustrative age/blood-loss rules |
-| Return site-specific audit sheets | `outputs/site_audit.csv` and `outputs/site_summary.csv` |
-| Deliver reproducible analysis data | `outputs/analysis_ready.csv` with flagged cases excluded |
-| Make validation transparent | `outputs/validation_report.json` with counts and check definitions |
-| Prepare Postgres data model | `sql/001_schema.sql`, `sql/002_cohorts.sql` |
-| Summarize data with tidyverse | `r/cohort_summary.R` (requires separate R installation) |
-| Review AI-assisted changes | tests + human-review checklist; use Git branches and PRs when publishing |
+## Why this is useful
 
-## Quickstart
+Analytics fails when rows vanish silently, identifiers disagree across systems, or a forecast accidentally sees future data. This project treats **data quality as part of analytical delivery**: a metric should ship with a clear description of source inputs, exclusions, validation checks, and unresolved anomalies.
 
-Requires Python 3.10+. From the repository root:
+### Evidence from a deterministic demo run
+
+- **14,001** fictional ticket rows generated, with **96** fictional agent records and **1,086** regional shift records.
+- **10 ticket rows excluded** by explicit QA rules; **13,991** clean rows retained; source and output counts reconcile.
+- **12** ticket rule violations and **1** staffing-feed violation detected (multiple problems can apply to one ticket).
+- **8/8 Python tests passing locally**. The actual Python tests and pipeline can be rerun with the commands below.
+- Backtesting compares previous-week same-weekday demand against an expanding historical mean on a **28-day holdout**, without future-data leakage.
+
+Numbers above reflect an entirely synthetic, fixed-seed run and are not research findings about real customers. The data and large output CSVs are regenerated locally by the quickstart command; no private records or external downloads are needed.
+
+## Architecture
+
+```text
+data/raw/{tickets,agents,shifts}.csv [generated; synthetic]
+                |
+                v
+       Python type & reference audits  ---> outputs/qa_exceptions.csv
+                |                        ---> outputs/validation_notes.md
+                v
+       outputs/clean_tickets.csv
+                |
+                +----> SQL/PostgreSQL analytical views (examples)
+                +----> R/tidyverse monthly summaries (example)
+                +----> daily regional SLA/staffing metrics
+                                  |
+                                  v
+                         28-day forecast backtest
+```
+
+## Run it
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
+source .venv/bin/activate
 pip install -r requirements.txt
-python -m src.sata_demo.generate --output data/raw
-python -m src.sata_demo.pipeline --input data/raw --output outputs
-pytest -q
+python -m pytest -q
+python -m src.ops_reliability.run --generate
 ```
 
-Optional, if R and tidyverse are installed:
+Key files: `src/ops_reliability/qa.py` (cross-source validation), `analysis.py` (metrics/forecasts), `sql/` (PostgreSQL schema and queries), `r/operations_summary.R` (tidyverse transformation), `tests/` (edge cases and assertions), `outputs/validation_notes.md` (plain-English evidence of checks).
 
-```bash
-Rscript r/cohort_summary.R outputs/analysis_ready.csv outputs/r_site_summary.csv
-```
+See `docs/ENVIRONMENT_AND_SECURITY.md` for optional R/PostgreSQL setup, `docs/DATA_DICTIONARY.md` for types and lineage, and `docs/AI_ASSISTANCE_AND_VERIFICATION.md` for the AI-assisted development disclosure and review checklist.
 
-Generated runtime outputs are intentionally not committed; representative output examples are checked in under `docs/examples/`. The synthetic input files **are committed** for repeatability, and can be regenerated deterministically. To visualize data, open `outputs/validation_report.json` and `outputs/site_audit.csv`.
+## Data safety and honesty
 
-## Controlled synthetic error cases
+All data is algorithmically generated, using arbitrary ticket and agent IDs; there are **no actual customers, employees, patients, employers, or private business records**. The illustrative SLA targets and validation thresholds cannot be used to make real production decisions. This is a learning and demonstration portfolio, not a finished deployed service or a previously performed employer project.
 
-Generator intentionally inserts: a missing REDCap stop time, out-of-range blood loss, impossible registry age, wrong site label, duplicate REDCap case, unrecognized ASA code, and a registry case missing from the anesthesia extract. The QA pipeline reports each case with a rule code and a site-scoped audit message. Rules are **pedagogical approximations, not validated medical definitions**.
-
-## Schema + security model
-
-`docs/data_dictionary.md` lists source fields and controlled values. No names, MRNs, birth dates, clinical notes, or actual identifiers are used. `case_id` and `site_id` are fictional test identifiers only. Do **not** add real clinical files to this repo. `data/raw/*.csv` contains public synthetic examples; `.gitignore` excludes runtime outputs, local secrets, credentials, and non-synthetic work datasets by default.
-
-Real clinical deployment would require approved institutional systems, IRB/DUA permissions, secure transfer, access controls, privacy training, encryption, audit logging, schema and codebook approval, and PI signoff. None is implemented here.
-
-## What I would improve with a PI/team
-
-- Replace illustrative QA thresholds with an approved clinical codebook and governance process.
-- Add an R/Shiny review interface with authenticated, role-scoped access (not suitable for this public demo).
-- Integrate secure REDCap API exports and registry mappings **only after** appropriate authorization.
-- Add CI checks for R syntax and database migrations using an actual PostgreSQL service.
-
-## Development provenance / honest representation
-
-This initial repository was generated with AI assistance on **2026-11-18**. The included Git commits reflect the actual construction steps of this prototype, attributed to the assistant rather than impersonating an applicant. If using it in an application, review and run the code, understand the tradeoffs, fix issues you identify, and contribute your own commits before describing it as work you've personally implemented. Do not claim clinical deployment, validated medical rules, PHI handling, actual REDCap system access, or affiliation with UCSF.
-
-### Repository workflows
-
-See [`docs/development_workflow.md`](docs/development_workflow.md) for environment setup, a branch/merge example, AI code review checklist, and instructions to publish this Git history to your own GitHub account.
+**Verification status:** Python tests and end-to-end generation were executed locally. R and PostgreSQL examples still require runtime validation in their respective environments. GitHub Actions is configured for Python tests, but a successful hosted CI run must be confirmed separately.

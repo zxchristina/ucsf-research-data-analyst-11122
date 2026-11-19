@@ -1,12 +1,11 @@
-__pycache__/
-*.py[cod]
-.pytest_cache/
 .venv/
+__pycache__/
+.pytest_cache/
+*.pyc
 .env
-*.key
-*.pem
-outputs/*
-!outputs/.gitkeep
-data/private/
-data/real/
 .DS_Store
+# Reproducible generated fixtures and artifacts (not needed for source review)
+data/raw/*.csv
+outputs/*.csv
+outputs/*.json
+outputs/*.md

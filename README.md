@@ -1,6 +1,5 @@
 # ServiceOps Reliability Lab
 
-**An independent operations analytics portfolio project — not a mock clinical database, a USC/UCSF assignment, or employer-proprietary work.**
 
 A reproducible analytics system for a practical business question: **Can a distributed customer support team trust its daily demand, SLA and staffing metrics enough to make scheduling decisions?**
 

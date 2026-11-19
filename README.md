@@ -1,8 +1,6 @@
 # Synthetic Multicenter Transplant Outcomes Data QA
 
-**Prepared as an independent portfolio demonstration for the UCSF Research Data Analyst application (Req 11122) | Entirely synthetic data | Not an official UCSF/SATA project**
-
-A reproducible, small-scale demonstration of how a research data coordination center could ingest REDCap-style exports, registry records, and anesthesia extracts from **16 fictional participating sites**, run transparent data-quality rules, and publish an audited, analysis-ready cohort. Built as an **AI-assisted portfolio starter** for personal learning. It is not affiliated with UCSF, the SATA Liver Transplant Outcomes Database, SRTR, or any clinical provider.
+A reproducible, small-scale demonstration of how a research data coordination center could ingest REDCap-style exports, registry records, and anesthesia extracts from **16 fictional participating sites**, run transparent data-quality rules, and publish an audited, analysis-ready cohort. 
 
 **No actual patient information is included**. Field names, code lists, and plausibility thresholds are illustrative and **must not be used for clinical decisions or real protected health information (PHI)**.
 

@@ -5,18 +5,24 @@ import pandas as pd
 
 
 def daily_metrics(clean: pd.DataFrame, shifts: pd.DataFrame) -> pd.DataFrame:
+    # Calendar grain comes from the full workforce schedule, not observed tickets.
+    # This preserves zero-ticket days and ensures shift(7) means seven calendar days.
     groups = clean.groupby(["region", "ticket_day"], as_index=False).agg(
         ticket_count=("ticket_id", "nunique"),
         breached=("sla_breached", "sum"),
         median_resolution_minutes=("resolution_minutes", "median"),
     )
-    groups["breach_rate"] = groups["breached"] / groups["ticket_count"]
     schedules = shifts.rename(columns={"shift_date": "ticket_day"}).copy()
     schedules["scheduled_agent_hours"] = pd.to_numeric(schedules["scheduled_agent_hours"], errors="coerce")
     schedules.loc[schedules["scheduled_agent_hours"].le(0), "scheduled_agent_hours"] = np.nan
-    combined = groups.merge(schedules[["region", "ticket_day", "scheduled_agent_hours"]],
-                            on=["region", "ticket_day"], how="left", validate="one_to_one", indicator=True)
-    combined["hours_per_ticket"] = combined["scheduled_agent_hours"] / combined["ticket_count"]
+    combined = schedules[["region", "ticket_day", "scheduled_agent_hours"]].merge(
+        groups, on=["region", "ticket_day"], how="left",
+        validate="one_to_one", indicator=True)
+    combined[["ticket_count", "breached"]] = (
+        combined[["ticket_count", "breached"]].fillna(0).astype(int))
+    denominator = combined["ticket_count"].replace(0, np.nan)
+    combined["breach_rate"] = combined["breached"] / denominator
+    combined["hours_per_ticket"] = combined["scheduled_agent_hours"] / denominator
     return combined.sort_values(["region", "ticket_day"]).reset_index(drop=True)
 
 

@@ -54,9 +54,11 @@ def test_metrics_are_joined_to_staffing(tmp_path):
     tickets, agents, shifts = inputs(tmp_path, errors=False)
     result = audit(tickets, agents, shifts)
     metrics = daily_metrics(result.clean, shifts)
-    assert metrics['ticket_count'].gt(0).all()
-    assert metrics['breach_rate'].between(0,1).all()
-    assert metrics['_merge'].eq('both').all()
+    assert metrics['ticket_count'].ge(0).all()
+    assert len(metrics) == len(shifts)  # Calendar coverage includes zero-demand days
+    assert metrics.loc[metrics['ticket_count'].gt(0), 'breach_rate'].between(0,1).all()
+    assert metrics.loc[metrics['ticket_count'].eq(0), 'breach_rate'].isna().all()
+    assert metrics['_merge'].isin(['both', 'left_only']).all()
 
 
 def test_forecast_uses_past_only(tmp_path):
